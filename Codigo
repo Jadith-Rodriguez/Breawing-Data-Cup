@@ -1,0 +1,78 @@
+install.packages("dplyr")
+library(dplyr)
+library(tidyverse)
+library(datasets)
+library(plyr)
+library(rpart)
+
+#Base Bruta - Organización Fecha
+data=data.frame(Input2_clientes_venta_1)
+nueva_fecha = paste(data$Mes,data$Año)
+fecha1 <- as.yearmon(as.character(nueva_fecha), "%m%Y")
+fecha=as.Date(fecha1)
+data1<- cbind(data,fecha)
+data2<-select(data1, -Año, -Mes)
+
+#Base de datos clientes sugeridos para la probabilidad
+w<-select(`Input3_clientes_test.(1)`, -Marca1, -Marca2,-Marca3,-Marca_Inno1, -Marca_Inno2)
+x<-`Input1_clientes_estructura.(1)`
+dataunida<-merge(w,x,by="Cliente")
+
+#Base de datos clientes total variables
+datosa<-merge(dataunida,data2,by="Cliente")
+datosb=mutate(datosa,Gerencia_1=1,SubCanal_1=1,Categoria_1=1)
+datosc=spread(datosb,key = Gerencia2, value = Gerencia_1, fill = 0)
+datosd=spread(datosc,key = SubCanal2, value = SubCanal_1, fill = 0)
+datos=spread(datosd,key = Categoria, value = Categoria_1, fill = 0)
+summary(datos)
+
+marca1<- datos %>%
+  filter(Marca2 =="Marca_20", Cupo2 =="Cupo_3", CapacidadEnvase2 == "CapacidadEnvase_9" )
+marca2<- datos %>%
+  filter(Marca2 =="Marca_16", Cupo2 =="Cupo_2", CapacidadEnvase2 == "CapacidadEnvase_10" )
+marca3<- datos %>%
+  filter(Marca2 =="Marca_9", Cupo2 =="Cupo_3", CapacidadEnvase2 == "CapacidadEnvase_12" )
+marca_Inno1<- datos %>%
+  filter(Marca2 =="Marca_38", Cupo2 =="Cupo_2", CapacidadEnvase2 == "CapacidadEnvase_10" )
+marca_Inno2<- datos %>%
+  filter(Marca2 =="Marca_39", Cupo2 =="Cupo_2", CapacidadEnvase2 == "CapacidadEnvase_10" )
+
+a <- cbind(marca1,Marca=rep("Marca_1",nrow(marca1)))
+Marca1<-select(a, -Marca2, -Cupo2, -CapacidadEnvase2, -Regional2)%>%
+  arrange(Cliente)
+b <- cbind(marca2,Marca=rep("Marca_2",nrow(marca2)))
+Marca2<-select(b, -Marca2, -Cupo2, -CapacidadEnvase2, -Regional2)%>%
+  arrange(Cliente)
+c <- cbind(marca3,Marca=rep("Marca_3",nrow(marca3)))
+Marca3<-select(c, -Marca2, -Cupo2, -CapacidadEnvase2, -Regional2)%>%
+  arrange(Cliente)
+d <- cbind(marca_Inno1,Marca=rep("Marca_Inno1",nrow(marca_Inno1)))
+Marca_Inno1<-select(d, -Marca2, -Cupo2, -CapacidadEnvase2, -Regional2)%>%
+  arrange(Cliente)
+e <- cbind(marca_Inno2,Marca=rep("Marca_Inno2",nrow(marca_Inno2)))
+Marca_Inno2<-select(d, -Marca2, -Cupo2, -CapacidadEnvase2, -Regional2)%>%
+  arrange(Cliente)
+
+total= rbind(Marca1,Marca2,Marca3,Marca_Inno1, Marca_Inno2)
+
+#Participación Marca1
+PG1=(sum(Marca1$Gerencia_1))/(nrow(Marca1))
+PG2=(sum(Marca1$Gerencia_2))/(nrow(Marca1))
+PG3=(sum(Marca1$Gerencia_3))/(nrow(Marca1))
+PG4=(sum(Marca1$Gerencia_4))/(nrow(Marca1))
+PG5=(sum(Marca1$Gerencia_5))/(nrow(Marca1))
+PG6=(sum(Marca1$Gerencia_6))/(nrow(Marca1))
+PG7=(sum(Marca1$Gerencia_7))/(nrow(Marca1))
+PG8=(sum(Marca1$Gerencia_8))/(nrow(Marca1))
+PG9=(sum(Marca1$Gerencia_9))/(nrow(Marca1))
+PG10=(sum(Marca1$Gerencia_10))/(nrow(Marca1))
+PG11=(sum(Marca1$Gerencia_11))/(nrow(Marca1))
+PG=cbind(PG1, PG2, PG3, PG4, PG5, PG6, PG7, PG8, PG9, PG10, PG11)
+PG
+
+PG1=(sum(Marca1$Gerencia_1))/(nrow(Marca1))
+PSC1=(sum(Marca1$Subcanal_1))/(nrow(Marca1))
+PSubcanal1=mutate(prob = freq / sum(freq))
+
+rega= lm(Marca1$nr~ Marca1$Gerencia_1 + Marca1$Gerencia_2 + Marca1$Gerencia_3 + Marca1$Gerencia_4 + Marca1$Gerencia_5 + Marca1$Gerencia_6 + Marca1$Gerencia_7 + Marca1$Gerencia_8 + Marca1$Gerencia_9 + Marca1$Gerencia_10 + Marca1$Gerencia_11)
+summary(rega)
